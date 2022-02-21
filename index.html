@@ -1,0 +1,108 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+
+</head>
+    <body>
+
+        Płeć</p>
+        <form>
+            <select id="plec_form">
+                <option id="Mężczyzna">Mężczyzna</option>
+                <option id="Kobieta">Kobieta</option>
+            </select>
+        </form>
+        Data urodzenia</p>
+        <input type="date" id="data" name="data"></p>
+
+        <button onclick="generuj()">GENERUJ</button>
+        <!-- document.getElementById("data").value; zwroci dane w takiej postaci: '2004-07-13' A DANE WPROWADZAMY W TAKIEJ FORMIE '13-07-2004' czyli kolejnosc sie odwraca!!!-->
+        <div id = "wygenerowany_pesel"></div>
+        <script> 
+            function generuj()
+            { 
+                // wagi: 1 - 3 – 7 – 9 – 1 – 3 – 7 – 9 – 1 – 3;
+                console.log("------------------------------------------------------------------------------");
+                console.log( document.getElementById("data").value );
+                var rok_urodzenia = document.getElementById("data").value[0] + document.getElementById("data").value[1] + document.getElementById("data").value[2] + document.getElementById("data").value[3];
+                var RR = document.getElementById("data").value[2] + document.getElementById("data").value[3]; // ostatnie dwie cyfry roku urodzenia
+                console.log("RR: " + RR);
+
+                if (rok_urodzenia > 2199) // urodzony w latach 2200-2299
+                    var MM = 60 + parseInt(document.getElementById("data").value[5] + document.getElementById("data").value[6]); // sprowadzamy wszystko do intow i do miesiaca urodzenia dodajemy 60
+                else if (rok_urodzenia > 2099) // urodzony w latach 2100-2199
+                    var MM = 40 + parseInt(document.getElementById("data").value[5] + document.getElementById("data").value[6]); // dodajemy 40
+                else if (rok_urodzenia > 1999) // urodzony w latach 2000-2099
+                    var MM = 20 + parseInt(document.getElementById("data").value[5] + document.getElementById("data").value[6]); // dodajemy 20
+                else if (rok_urodzenia > 1899 ) // urodzony w latach 1900-1999
+                    var MM = document.getElementById("data").value[5] + document.getElementById("data").value[6]; // NIE dodajemy nic
+                else // urodzony w latach 1800-1899
+                    var MM = 80 + parseInt(document.getElementById("data").value[5] + document.getElementById("data").value[6]); // dodajemy 80
+                
+                console.log("MM: " + MM);
+
+                var DD = document.getElementById("data").value[8] + document.getElementById("data").value[9]; // dzien urodzenia
+                console.log("DD: " + DD);
+                
+                var PPPP = generuj_losowa_liczbe(0, 9); // liczba porzadkowa oznaczajaca plec (pierwsze 3 liczby sa losowane z zakresu 0-9 a ostatnia cyfra jest zalezna od plci i rowniez jes losowana dla mezczyzn sa to liczby nieparzyste a dla kobiet parzyste)
+                console.log("PPPP: " + PPPP);
+                var pierwsze_10_cyfr = RR + MM + DD + PPPP;
+                console.log("pierwsze_10_cyfr: " + pierwsze_10_cyfr);
+                var pesel = pierwsze_10_cyfr + generuj_cyfre_kontrolna(pierwsze_10_cyfr);
+                console.log("pesel: " + pesel)
+                document.getElementById("wygenerowany_pesel").innerHTML = pesel;
+            }
+            function generuj_losowa_liczbe(min, max) 
+            {
+                var wylosowane_liczby = [];
+                wylosowane_liczby.length = 3; // nadawanie ilosci elementow tablicy
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                for (var i = 0; i < 3; i++){
+                    wylosowane_liczby[i] = Math.floor(Math.random() * (max - min + 1)) + min;
+                    console.log('wylosowane_liczby ' + i + ": " + wylosowane_liczby[i]);
+                }
+
+                var liczby_porzadkowe_mezczyzna  = ['1', '3', '5', '7', '9'];   // liczby nieparzyste
+                var liczby_porzadkowe_kobieta  = ['0', '2', '4', '6', '8'];   // parzyste
+                if ( document.getElementById('plec_form').value == "Mężczyzna" )
+                    var wylosowana_licza_porzadkowa_plec = liczby_porzadkowe_mezczyzna[Math.floor(Math.random() * liczby_porzadkowe_mezczyzna.length)]; // losowanie jedego elementu z tablicy
+                else // kobieta
+                    var wylosowana_licza_porzadkowa_plec = liczby_porzadkowe_kobieta[Math.floor(Math.random() * liczby_porzadkowe_kobieta.length)];
+                
+                console.log("Wylosowana liczba porzadkowa od plci: " + wylosowana_licza_porzadkowa_plec);
+                //return wylosowane_liczby.toString(); // wyswietli z przecinkami: 7,8,3
+                return wylosowane_liczby.join('') + wylosowana_licza_porzadkowa_plec.toString();
+            }
+            function generuj_cyfre_kontrolna(pierwsze_10_cyfr)
+            {
+                var wagi_kontrolne = [1,3,7,9,1,3,7,9,1,3];
+                var waga = 0;
+                for(var i = 0; i < 10; i++)
+                   waga += pierwsze_10_cyfr[i] * wagi_kontrolne[i];
+
+                console.log("waga: " + waga);
+
+                waga = waga % 10; // otrzymamy ostatni znak
+                if (waga > 0){ // ostatnia liczba kontrolna jest jednocyfrowa wiec jesli waga bedzie 0 to po odjeciu od 10 zera wyjdzie 10, wiec ten if jest po to zeby zamiast 10 zapisac zero
+                 var M = 10 - waga;
+                 console.log("M: " + M);
+                    return M;
+                }
+                else{
+                     var M = 0;
+                    console.log("M: " + M);
+                    return M;
+                }
+      
+            }
+
+
+            /*Credits
+                https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array
+                https://www.gov.pl/web/gov/czym-jest-numer-pesel
+                http://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU20120000074/O/D20120074.pdf
+            */
+        </script>
+    </body>
+</html>
